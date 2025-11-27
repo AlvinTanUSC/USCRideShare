@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cardinal-red: #990000;
+  --color-gold: #FFCC00;
+}
