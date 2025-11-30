@@ -211,6 +211,9 @@ npm run build
 ## Known Issues / TODOs
 
 1. **Authentication**: Replace mock auth with real Google OAuth
+
+// TODO: add authentication for rides
+
 2. **User Management**: Need `/api/me` endpoint to get current user
 3. **Error Handling**: Add more specific error messages
 4. **Loading States**: Improve loading skeletons
