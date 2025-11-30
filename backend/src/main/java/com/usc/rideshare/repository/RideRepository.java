@@ -20,4 +20,13 @@ public interface RideRepository extends JpaRepository<Ride, UUID> {
 
     // Find rides by user
     List<Ride> findByUser_UserIdOrderByCreatedAtDesc(UUID userId);
+
+    // Find rides by user ID (simpler name)
+    List<Ride> findByUserUserId(UUID userId);
+
+    // Find rides by destination
+    List<Ride> findByDestination(String destination);
+
+    // Find rides by destination and status
+    List<Ride> findByDestinationAndStatus(String destination, RideStatus status);
 }
