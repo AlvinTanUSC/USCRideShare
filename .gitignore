@@ -1,0 +1,44 @@
+# Environment variables (secrets)
+.env
+.env.local
+.env.*.local
+
+# Backend
+backend/target/
+backend/.idea/
+backend/*.iml
+backend/.DS_Store
+backend/.vscode/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.idea/
+frontend/*.iml
+frontend/.DS_Store
+frontend/.vscode/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+*.class
+*.jar
+*.war
+*.ear

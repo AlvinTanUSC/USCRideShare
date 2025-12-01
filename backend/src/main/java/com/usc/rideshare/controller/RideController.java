@@ -4,6 +4,7 @@ import com.usc.rideshare.dto.RideFilterRequest;
 import com.usc.rideshare.dto.RideRequest;
 import com.usc.rideshare.dto.RideResponse;
 import com.usc.rideshare.service.RideService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -28,10 +29,9 @@ public class RideController {
     @PostMapping
     public ResponseEntity<RideResponse> createRide(
             @Valid @RequestBody RideRequest request,
-            @RequestHeader(value = "X-User-Id", required = false) UUID userId) {
+            HttpServletRequest servletRequest) {
 
-        // TODO: Get userId from authentication context instead of header
-        // For now, using header for testing
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -57,3 +57,4 @@ public class RideController {
         return ResponseEntity.ok(ride);
     }
 }
+

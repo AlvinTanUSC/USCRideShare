@@ -1,35 +1,63 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    // Initialize Google Sign-In
+    if (window.google) {
+      console.log('GOOGLE CLIENT ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+      console.log('ORIGIN:', location.origin);
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-signin-button'),
+        { theme: 'outline', size: 'large' }
+      );
+    }
+  }, []);
+
+  const handleGoogleResponse = async (response) => {
+    setLoading(true);
     setError('');
+    try {
+      // Send ID token to backend
+      const backendRes = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/google`,
+        { idToken: response.credential }
+      );
 
-    // Validate USC email
-    if (!email.endsWith('@usc.edu')) {
-      setError('Please use your USC email (@usc.edu)');
-      return;
+      if (backendRes.data && backendRes.data.token) {
+        // Store JWT token
+        const token = backendRes.data.token;
+        localStorage.setItem('authToken', token);
+
+        // Try to decode JWT payload to get user email and id
+        try {
+          const parts = token.split('.');
+          if (parts.length >= 2) {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            if (payload.email) localStorage.setItem('userEmail', payload.email);
+            if (payload.sub) localStorage.setItem('userId', payload.sub);
+          }
+        } catch (e) {
+          // ignore decode errors
+        }
+
+        navigate('/rides');
+      }
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Authentication failed. Please try again.';
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
-
-    // TODO: Implement actual Google OAuth
-    // For now, mock login for development
-    // Generate a mock UUID if one doesn't exist
-    let userId = localStorage.getItem('userId');
-    if (!userId || userId === 'test-user-id') {
-      // Generate a valid UUID v4
-      userId = 'a0a0a0a0-1111-2222-3333-444444444444';
-    }
-
-    localStorage.setItem('userEmail', email);
-    localStorage.setItem('userId', userId); // Mock user ID (valid UUID)
-    localStorage.setItem('authToken', 'mock-token'); // Mock token
-
-    navigate('/rides');
   };
 
   return (
@@ -45,43 +73,31 @@ export default function Login() {
           <p className="text-gray-600 text-sm">USC emails only</p>
         </div>
 
-        <form onSubmit={handleLogin}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email (simulates Google SSO)
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tommy.trojan@usc.edu"
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cardinal-red"
-              required
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              We'll verify that your email ends with @usc.edu
-            </p>
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
           </div>
+        )}
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="w-full bg-cardinal-red text-white py-3 rounded-md font-medium hover:bg-red-800 transition"
-          >
-            Sign in with Google
-          </button>
-        </form>
+        <div className="mb-4">
+          <div
+            id="google-signin-button"
+            className="flex justify-center"
+          ></div>
+        </div>
 
         <div className="mt-6 text-center text-sm text-gray-500">
-          <p>Note: This is a development mock.</p>
-          <p>In production, real Google OAuth will be used.</p>
+          <p>Sign in with your USC Google account (@usc.edu)</p>
+          <p className="mt-2">Your account will be verified by Google.</p>
         </div>
+
+        {loading && (
+          <div className="mt-4 text-center text-gray-600">
+            Signing in...
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
