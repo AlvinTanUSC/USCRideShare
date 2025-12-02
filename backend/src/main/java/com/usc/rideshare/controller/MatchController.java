@@ -83,6 +83,39 @@ public class MatchController {
     }
 
     /**
+     * POST /api/matches/request
+     * Request to connect to an existing ride (creates a PENDING match).
+     * Body: { "myRideId": "...", "targetRideId": "..." }
+     */
+    @PostMapping("/request")
+    public ResponseEntity<?> requestMatch(
+            @RequestBody JoinRideRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) UUID userId) {
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (request.getMyRideId() == null || request.getTargetRideId() == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Both myRideId and targetRideId are required");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        try {
+            MatchResponse match = matchingService.requestMatch(
+                    request.getMyRideId(),
+                    request.getTargetRideId(),
+                    userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(match);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    /**
      * DELETE /api/matches/{matchId}
      * Cancel/leave a match. Both rides go back to PENDING status.
      */

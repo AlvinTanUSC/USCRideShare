@@ -175,6 +175,67 @@ public class MatchingService {
     }
 
     /**
+     * Request to connect to a target ride (creates a PENDING match).
+     * Does NOT mark rides as MATCHED — waits for accept/decline flow.
+     */
+    @Transactional
+    public MatchResponse requestMatch(UUID myRideId, UUID targetRideId, UUID userId) {
+        Ride myRide = rideRepository.findById(myRideId)
+                .orElseThrow(() -> new RideNotFoundException("Your ride not found"));
+        Ride targetRide = rideRepository.findById(targetRideId)
+                .orElseThrow(() -> new RideNotFoundException("Target ride not found"));
+
+        // Verify user owns myRide
+        if (!myRide.getUser().getUserId().equals(userId)) {
+            throw new IllegalArgumentException("You can only request from your own ride");
+        }
+
+        // Same destination required
+        if (!myRide.getDestination().equals(targetRide.getDestination())) {
+            throw new IllegalArgumentException("Rides must have the same destination");
+        }
+
+        // Target must be available
+        if (targetRide.getStatus() != RideStatus.ACTIVE) {
+            throw new IllegalArgumentException("Target ride is not available for matching");
+        }
+
+        // My ride must be available
+        if (myRide.getStatus() == RideStatus.MATCHED || myRide.getStatus() == RideStatus.COMPLETED) {
+            throw new IllegalArgumentException("Your ride is already matched or completed");
+        }
+
+        // Time compatibility
+        if (!areTimesCompatible(myRide, targetRide)) {
+            throw new IllegalArgumentException("Ride times are not compatible");
+        }
+
+        // Prevent duplicate requests/accepted matches
+        Optional<Match> existingMatch = matchRepository.findExistingMatch(myRideId, targetRideId);
+        if (existingMatch.isPresent()) {
+            Match m = existingMatch.get();
+            if (m.getStatus() == com.usc.rideshare.entity.enums.MatchStatus.ACCEPTED) {
+                throw new IllegalArgumentException("Already matched with this ride");
+            }
+            if (m.getStatus() == com.usc.rideshare.entity.enums.MatchStatus.PENDING) {
+                // Return existing pending match
+                return MatchResponse.fromEntity(m);
+            }
+        }
+
+        double score = calculateMatchScore(myRide, targetRide);
+
+        Match match = new Match();
+        match.setRide1(myRide);     // requester
+        match.setRide2(targetRide); // target
+        match.setMatchScore(score);
+        match.setStatus(com.usc.rideshare.entity.enums.MatchStatus.PENDING);
+
+        Match saved = matchRepository.save(match);
+        return MatchResponse.fromEntity(saved);
+    }
+
+    /**
      * Cancel/leave a match.
      * When cancelled, both rides go back to PENDING status.
      */

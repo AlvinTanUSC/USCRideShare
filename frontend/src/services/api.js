@@ -79,6 +79,14 @@ export const matchApi = {
 
   // Get user's rides with their potential matches (dashboard view)
   getMyRidesWithMatches: () => apiClient.get('/api/matches/my-rides'),
+
+  // Request a match (user sends a request to join a ride)
+  requestMatch: async (myRideId, targetRideId) => {
+    return apiClient.post('/api/matches/request', {
+      myRideId,
+      targetRideId,
+    });
+  },
 };
 
 export default apiClient;

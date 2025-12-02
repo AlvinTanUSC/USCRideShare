@@ -91,6 +91,31 @@ export default function Rides() {
     }
   };
 
+  // Request to connect to a ride
+  const handleRequestConnect = async (candidateRideId) => {
+    if (!myRideId) {
+      setError('You must post a ride first.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const res = await matchApi.requestMatch(myRideId, candidateRideId);
+      console.debug('Request to connect created:', res.data);
+      // mark the candidate locally as requested so UI updates immediately
+      setMatches((prev) =>
+        prev.map((m) =>
+          m.candidateRideId === candidateRideId ? { ...m, status: 'PENDING' } : m
+        )
+      );
+    } catch (err) {
+      console.error('Request to connect failed', err);
+      setError(err.response?.data?.message || 'Failed to request connection');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Poll for new matches when waiting
   useEffect(() => {
     if (step === 'waiting' && myRideId) {
@@ -202,6 +227,19 @@ export default function Rides() {
                 >
                   {joining ? '...' : 'Join'}
                 </button>
+              </div>
+              <div className="mt-2">
+                <span className={`text-xs rounded-full px-2 py-1 ${m.status === 'PENDING' ? 'bg-yellow-500' : 'bg-green-500'}`}>
+                  {m.status === 'PENDING' ? 'Request Sent' : 'Available'}
+                </span>
+                {m.status === 'AVAILABLE' && (
+                  <button
+                    onClick={() => handleRequestConnect(m.candidateRideId)}
+                    className="ml-2 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-full px-3 py-1"
+                  >
+                    Request to Connect
+                  </button>
+                )}
               </div>
             </div>
           ))}
