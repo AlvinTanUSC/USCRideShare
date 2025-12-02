@@ -21,6 +21,76 @@ export default function Rides() {
   const [polling, setPolling] = useState(false);
   const pollIntervalRef = useRef(null);
 
+  // Handle form submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!origin.trim() || !datetime) {
+      setError('Please fill in all fields.');
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+    setStep('searching');
+
+    try {
+      // Convert datetime-local (e.g. "2025-12-03T17:11") to an ISO instant string
+      const departureIso = datetime ? new Date(datetime).toISOString() : null;
+
+      // default time flexibility minutes for now
+      const timeFlexMinutes = 10;
+
+      const rideData = {
+        originLocation: origin,
+        destination,
+        departureDatetime: departureIso,
+        flexibleTime: true,
+        timeFlexibilityMinutes: timeFlexMinutes,
+        maxPassengers: 2,
+      };
+
+      console.debug('Submitting ride payload:', rideData);
+
+      const response = await rideApi.createRide(rideData);
+      console.debug('Create ride response:', response);
+
+      setMyRideId(response.data.rideId);
+      setStep('waiting');
+
+      // Immediately fetch potential matches once, then the polling effect continues
+      try {
+        const potentialMatchesRes = await matchApi.findPotentialMatches(response.data.rideId);
+        setMatches(potentialMatchesRes.data || []);
+        if ((potentialMatchesRes.data || []).length > 0) {
+          setStep('results');
+        }
+      } catch (matchErr) {
+        console.error('Error fetching potential matches:', matchErr);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.error || 'Failed to create ride';
+      setError(msg);
+      console.error('Create ride failed:', msg, err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Join a ride
+  const handleJoin = async (targetRideId) => {
+    setJoining(true);
+    try {
+      await matchApi.joinRide(myRideId, targetRideId);
+      setStep('success');
+    } catch (err) {
+      console.error('Join error:', err); // Log the error for debugging
+      alert(err.response?.data?.error || 'Failed to join');
+    } finally {
+      setJoining(false);
+    }
+  };
+
   // Poll for new matches when waiting
   useEffect(() => {
     if (step === 'waiting' && myRideId) {
@@ -71,68 +141,6 @@ export default function Rides() {
     { value: 'ONT', label: '✈️ Ontario Airport' },
     { value: 'UNION_STATION', label: '🚂 Union Station' },
   ];
-
-  // Handle form submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!origin.trim() || !datetime) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    setError('');
-    setLoading(true);
-    setStep('searching');
-
-    try {
-      // 1. Create ride
-      const rideRes = await rideApi.createRide({
-        originLocation: origin,
-        destination: destination,
-        departureDatetime: new Date(datetime).toISOString(),
-        maxPassengers: 2,
-        costSplitPreference: 'EQUAL',
-        flexibleTime: true,
-        timeFlexibilityMinutes: 60,
-        notes: '',
-      });
-
-      const rideId = rideRes.data.rideId;
-      setMyRideId(rideId);
-
-      // 2. Find matches
-      const matchRes = await matchApi.findPotentialMatches(rideId);
-      const foundMatches = matchRes.data || [];
-      setMatches(foundMatches);
-
-      // 3. Show results
-      if (foundMatches.length > 0) {
-        setStep('results');
-      } else {
-        setStep('waiting');
-      }
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || err.response?.data?.message || 'Something went wrong');
-      setStep('form');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Join a ride
-  const handleJoin = async (targetRideId) => {
-    setJoining(true);
-    try {
-      await matchApi.joinRide(myRideId, targetRideId);
-      setStep('success');
-    } catch (err) {
-      alert(err.response?.data?.error || 'Failed to join');
-    } finally {
-      setJoining(false);
-    }
-  };
 
   // Logout
   const handleLogout = () => {
@@ -190,6 +198,7 @@ export default function Rides() {
                   onClick={() => handleJoin(m.candidateRideId)}
                   disabled={joining}
                   className="bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-200 disabled:opacity-50"
+                  aria-label={`Join ride from ${m.candidateOrigin} to ${m.candidateDestination}`}
                 >
                   {joining ? '...' : 'Join'}
                 </button>
