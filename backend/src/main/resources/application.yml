@@ -3,9 +3,10 @@ spring:
     name: usc-rideshare
 
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/rideshare}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password}
+    # Supabase connection — set via environment variables
+    url: ${DATABASE_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -21,6 +22,11 @@ spring:
 
   server:
     port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:your-secret-key-change-in-production-should-be-at-least-256-bits-for-hs512}
+  expiration:
+    ms: ${JWT_EXPIRATION_MS:86400000}
 
 logging:
   level:

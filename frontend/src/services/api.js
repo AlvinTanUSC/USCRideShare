@@ -16,14 +16,6 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
-    // TODO: Replace with actual user ID from auth context
-    // For now, using a test user ID
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      config.headers['X-User-Id'] = userId;
-    }
-
     return config;
   },
   (error) => {
