@@ -6,16 +6,8 @@ spring:
     # Supabase connection — set via environment variables
     url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 1
-      minimum-idle: 0
-      connection-timeout: 30000
-      idle-timeout: 10000
-      max-lifetime: 600000
-      leak-detection-threshold: 60000
-      pool-name: USCRideSharePool
-      auto-commit: true
-      initialization-fail-timeout: -1
+    # HikariCP settings are now configured in DataSourceConfig.java
+    # This ensures proper connection pool management and graceful shutdown
 
   jpa:
     hibernate:
@@ -29,8 +21,12 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
-  server:
-    port: 8080
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: 8080
+  shutdown: graceful
 
 jwt:
   secret: ${JWT_SECRET:your-secret-key-change-in-production-should-be-at-least-256-bits-for-hs512}

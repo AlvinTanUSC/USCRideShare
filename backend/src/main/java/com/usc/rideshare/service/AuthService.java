@@ -17,10 +17,10 @@ public class AuthService {
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
 
-    public AuthService(UserRepository userRepository, JwtUtil jwtUtil) {
+    public AuthService(UserRepository userRepository, RestTemplate restTemplate, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.restTemplate = restTemplate;
         this.jwtUtil = jwtUtil;
-        this.restTemplate = new RestTemplate();
     }
 
     /**
