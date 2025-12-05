@@ -24,9 +24,38 @@ public class DataSourceConfig {
     public DataSource dataSource() {
         HikariConfig config = new HikariConfig();
 
+        // Parse JDBC URL to extract username and password
+        String cleanJdbcUrl = jdbcUrl;
+        String username = null;
+        String password = null;
+
+        if (jdbcUrl.contains("?")) {
+            String[] parts = jdbcUrl.split("\\?");
+            cleanJdbcUrl = parts[0];
+            String[] params = parts[1].split("&");
+
+            for (String param : params) {
+                String[] keyValue = param.split("=", 2);
+                if (keyValue.length == 2) {
+                    if ("user".equals(keyValue[0])) {
+                        username = keyValue[1];
+                    } else if ("password".equals(keyValue[0])) {
+                        password = keyValue[1];
+                    }
+                }
+            }
+        }
+
         // Basic connection settings
-        config.setJdbcUrl(jdbcUrl);
+        config.setJdbcUrl(cleanJdbcUrl);
         config.setDriverClassName("org.postgresql.Driver");
+
+        if (username != null) {
+            config.setUsername(username);
+        }
+        if (password != null) {
+            config.setPassword(password);
+        }
 
         // Connection pool settings - optimized for Supabase
         config.setMaximumPoolSize(10);
