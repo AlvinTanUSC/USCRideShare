@@ -137,4 +137,12 @@ public class RideService {
                 .orElseThrow(() -> new RideNotFoundException("Ride not found with id: " + rideId));
         return RideResponse.fromEntity(ride);
     }
+
+    @Transactional(readOnly = true)
+    public List<RideResponse> getRidesByUserId(UUID userId) {
+        List<Ride> rides = rideRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
+        return rides.stream()
+                .map(RideResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

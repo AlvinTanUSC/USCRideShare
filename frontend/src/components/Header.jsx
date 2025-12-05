@@ -1,14 +1,14 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const navigate = useNavigate();
-  const userEmail = localStorage.getItem('userEmail') || 'user@usc.edu';
+  const userEmail = localStorage.getItem("userEmail") || "user@usc.edu";
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userEmail');
-    navigate('/login');
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userEmail");
+    navigate("/login");
   };
 
   return (
@@ -17,7 +17,7 @@ export default function Header() {
         <div className="flex items-center space-x-4">
           <h1
             className="text-2xl font-bold cursor-pointer"
-            onClick={() => navigate('/rides')}
+            onClick={() => navigate("/rides")}
           >
             Trojan Rides
           </h1>
@@ -25,21 +25,28 @@ export default function Header() {
 
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => navigate('/rides/new')}
+            onClick={() => navigate("/rides/new")}
             className="bg-white text-cardinal-red px-4 py-2 rounded-md font-medium hover:bg-gray-100 transition"
           >
             Post a Ride
           </button>
 
           <button
-            onClick={() => navigate('/rides/match')}
+            onClick={() => navigate("/rides/match")}
             className="bg-gold text-cardinal-red px-4 py-2 rounded-md font-medium hover:bg-yellow-400 transition"
           >
             Find Match
           </button>
 
           <button
-            onClick={() => navigate('/matches')}
+            onClick={() => navigate("/rides/my-rides")}
+            className="text-white hover:text-gold transition font-medium"
+          >
+            My Rides
+          </button>
+
+          <button
+            onClick={() => navigate("/matches")}
             className="text-white hover:text-gold transition font-medium"
           >
             My Matches
@@ -52,10 +59,7 @@ export default function Header() {
             <span className="hidden md:inline">{userEmail}</span>
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="text-sm hover:underline"
-          >
+          <button onClick={handleLogout} className="text-sm hover:underline">
             Logout
           </button>
         </div>

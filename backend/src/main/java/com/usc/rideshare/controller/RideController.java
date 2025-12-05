@@ -51,6 +51,17 @@ public class RideController {
         return ResponseEntity.ok(rides);
     }
 
+    @GetMapping("/my-rides")
+    public ResponseEntity<List<RideResponse>> getMyRides(HttpServletRequest servletRequest) {
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        List<RideResponse> rides = rideService.getRidesByUserId(userId);
+        return ResponseEntity.ok(rides);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<RideResponse> getRideById(@PathVariable UUID id) {
         RideResponse ride = rideService.getRideById(id);

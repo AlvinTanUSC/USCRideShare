@@ -1,15 +1,16 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Rides from './pages/Rides';
-import NewRide from './pages/NewRide';
-import RideDetail from './pages/RideDetail';
-import RideMatch from './pages/RideMatch';
-import Chat from './pages/Chat';
-import MyMatches from './pages/MyMatches';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Rides from "./pages/Rides";
+import NewRide from "./pages/NewRide";
+import RideDetail from "./pages/RideDetail";
+import RideMatch from "./pages/RideMatch";
+import Chat from "./pages/Chat";
+import MyMatches from "./pages/MyMatches";
+import MyRides from "./pages/MyRides";
 
 // Protected Route component
 function ProtectedRoute({ children }) {
-  const isAuthenticated = localStorage.getItem('authToken');
+  const isAuthenticated = localStorage.getItem("authToken");
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -68,6 +69,14 @@ function App() {
           element={
             <ProtectedRoute>
               <MyMatches />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rides/my-rides"
+          element={
+            <ProtectedRoute>
+              <MyRides />
             </ProtectedRoute>
           }
         />
