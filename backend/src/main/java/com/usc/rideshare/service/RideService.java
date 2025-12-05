@@ -11,6 +11,9 @@ import com.usc.rideshare.entity.enums.RideStatus;
 import com.usc.rideshare.exception.RideNotFoundException;
 import com.usc.rideshare.repository.RideRepository;
 import com.usc.rideshare.repository.UserRepository;
+import com.usc.rideshare.entity.Match;
+import com.usc.rideshare.entity.enums.MatchStatus;
+import com.usc.rideshare.repository.MatchRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +25,19 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+
+
 @Service
 public class RideService {
 
     private final RideRepository rideRepository;
     private final UserRepository userRepository;
+    private final MatchRepository matchRepository;
 
-    public RideService(RideRepository rideRepository, UserRepository userRepository) {
+    public RideService(RideRepository rideRepository, UserRepository userRepository, MatchRepository matchRepository) {
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
+        this.matchRepository = matchRepository;
     }
 
     @Transactional
@@ -136,5 +143,42 @@ public class RideService {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RideNotFoundException("Ride not found with id: " + rideId));
         return RideResponse.fromEntity(ride);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RideResponse> getRidesByUserId(UUID userId) {
+        List<Ride> rides = rideRepository.findByUser_UserIdOrderByCreatedAtDesc(userId);
+        return rides.stream()
+                .map(RideResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public RideResponse cancelRide(UUID rideId, UUID userId) {
+        Ride ride = rideRepository.findById(rideId)
+                .orElseThrow(() -> new RideNotFoundException("Ride not found with id: " + rideId));
+
+        // Check ownership
+        if (!ride.getUser().getUserId().equals(userId)) {
+            throw new IllegalArgumentException("You can only cancel your own rides");
+        }
+
+        // Check if already cancelled
+        if (ride.getStatus() == RideStatus.CANCELLED) {
+            throw new IllegalStateException("Ride is already cancelled");
+        }
+
+        // Check for active matches
+        List<Match> activeMatches = matchRepository.findByRideId(rideId).stream()
+                .filter(m -> m.getStatus() == MatchStatus.SUGGESTED || m.getStatus() == MatchStatus.ACCEPTED)
+                .toList();
+
+        if (!activeMatches.isEmpty()) {
+            throw new IllegalStateException("Cannot cancel ride with active matches");
+        }
+
+        ride.setStatus(RideStatus.CANCELLED);
+        Ride savedRide = rideRepository.save(ride);
+        return RideResponse.fromEntity(savedRide);
     }
 }
