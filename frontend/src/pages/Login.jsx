@@ -15,6 +15,7 @@ export default function Login() {
       window.google.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         callback: handleGoogleResponse,
+        ux_mode: 'popup',
       });
       window.google.accounts.id.renderButton(
         document.getElementById('google-signin-button'),
