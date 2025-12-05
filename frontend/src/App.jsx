@@ -4,6 +4,8 @@ import Rides from './pages/Rides';
 import NewRide from './pages/NewRide';
 import RideDetail from './pages/RideDetail';
 import RideMatch from './pages/RideMatch';
+import Chat from './pages/Chat';
+import MyMatches from './pages/MyMatches';
 
 // Protected Route component
 function ProtectedRoute({ children }) {
@@ -50,6 +52,22 @@ function App() {
           element={
             <ProtectedRoute>
               <RideDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat/:matchId"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/matches"
+          element={
+            <ProtectedRoute>
+              <MyMatches />
             </ProtectedRoute>
           }
         />

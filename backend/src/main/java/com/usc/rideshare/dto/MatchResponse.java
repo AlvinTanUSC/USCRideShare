@@ -21,6 +21,10 @@ public class MatchResponse {
     private Instant createdAt;
     private Instant confirmedAt;
 
+    // Nested objects for frontend compatibility
+    private RideWithUser ride1;
+    private RideWithUser ride2;
+
     // Additional ride details for potential matches (when ride2Id is the candidate)
     private UUID candidateRideId; // The ride being suggested as a match
     private String candidateOrigin;
@@ -212,6 +216,194 @@ public class MatchResponse {
         this.candidateOwnerName = candidateOwnerName;
     }
 
+    public RideWithUser getRide1() {
+        return ride1;
+    }
+
+    public void setRide1(RideWithUser ride1) {
+        this.ride1 = ride1;
+    }
+
+    public RideWithUser getRide2() {
+        return ride2;
+    }
+
+    public void setRide2(RideWithUser ride2) {
+        this.ride2 = ride2;
+    }
+
+    // Nested class for ride with user data
+    public static class RideWithUser {
+        private UUID rideId;
+        private String originLocation;
+        private String destination;
+        private Instant departureDatetime;
+        private Boolean flexibleTime;
+        private Integer timeFlexibilityMinutes;
+        private Integer maxPassengers;
+        private String costSplitPreference;
+        private String notes;
+        private String status;
+        private UserInfo user;
+
+        public RideWithUser() {}
+
+        public UUID getRideId() {
+            return rideId;
+        }
+
+        public void setRideId(UUID rideId) {
+            this.rideId = rideId;
+        }
+
+        public String getOriginLocation() {
+            return originLocation;
+        }
+
+        public void setOriginLocation(String originLocation) {
+            this.originLocation = originLocation;
+        }
+
+        public String getDestination() {
+            return destination;
+        }
+
+        public void setDestination(String destination) {
+            this.destination = destination;
+        }
+
+        public Instant getDepartureDatetime() {
+            return departureDatetime;
+        }
+
+        public void setDepartureDatetime(Instant departureDatetime) {
+            this.departureDatetime = departureDatetime;
+        }
+
+        public Boolean getFlexibleTime() {
+            return flexibleTime;
+        }
+
+        public void setFlexibleTime(Boolean flexibleTime) {
+            this.flexibleTime = flexibleTime;
+        }
+
+        public Integer getTimeFlexibilityMinutes() {
+            return timeFlexibilityMinutes;
+        }
+
+        public void setTimeFlexibilityMinutes(Integer timeFlexibilityMinutes) {
+            this.timeFlexibilityMinutes = timeFlexibilityMinutes;
+        }
+
+        public Integer getMaxPassengers() {
+            return maxPassengers;
+        }
+
+        public void setMaxPassengers(Integer maxPassengers) {
+            this.maxPassengers = maxPassengers;
+        }
+
+        public String getCostSplitPreference() {
+            return costSplitPreference;
+        }
+
+        public void setCostSplitPreference(String costSplitPreference) {
+            this.costSplitPreference = costSplitPreference;
+        }
+
+        public String getNotes() {
+            return notes;
+        }
+
+        public void setNotes(String notes) {
+            this.notes = notes;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public UserInfo getUser() {
+            return user;
+        }
+
+        public void setUser(UserInfo user) {
+            this.user = user;
+        }
+
+        public static RideWithUser fromEntity(Ride ride) {
+            RideWithUser dto = new RideWithUser();
+            dto.setRideId(ride.getRideId());
+            dto.setOriginLocation(ride.getOriginLocation());
+            dto.setDestination(ride.getDestination());
+            dto.setDepartureDatetime(ride.getDepartureDatetime());
+            dto.setFlexibleTime(ride.getFlexibleTime());
+            dto.setTimeFlexibilityMinutes(ride.getTimeFlexibilityMinutes());
+            dto.setMaxPassengers(ride.getMaxPassengers());
+            dto.setCostSplitPreference(ride.getCostSplitPreference().name());
+            dto.setNotes(ride.getNotes());
+            dto.setStatus(ride.getStatus().name());
+            dto.setUser(UserInfo.fromEntity(ride.getUser()));
+            return dto;
+        }
+    }
+
+    // Nested class for user data
+    public static class UserInfo {
+        private UUID userId;
+        private String firstName;
+        private String lastName;
+        private String email;
+
+        public UserInfo() {}
+
+        public UUID getUserId() {
+            return userId;
+        }
+
+        public void setUserId(UUID userId) {
+            this.userId = userId;
+        }
+
+        public String getFirstName() {
+            return firstName;
+        }
+
+        public void setFirstName(String firstName) {
+            this.firstName = firstName;
+        }
+
+        public String getLastName() {
+            return lastName;
+        }
+
+        public void setLastName(String lastName) {
+            this.lastName = lastName;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public static UserInfo fromEntity(com.usc.rideshare.entity.User user) {
+            UserInfo dto = new UserInfo();
+            dto.setUserId(user.getUserId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setEmail(user.getEmail());
+            return dto;
+        }
+    }
+
     /**
      * Create MatchResponse from Match entity.
      */
@@ -234,6 +426,11 @@ public class MatchResponse {
         response.setMatchScore(match.getMatchScore());
         response.setCreatedAt(match.getCreatedAt());
         response.setConfirmedAt(match.getConfirmedAt());
+
+        // Add nested ride objects for frontend
+        response.setRide1(RideWithUser.fromEntity(match.getRide1()));
+        response.setRide2(RideWithUser.fromEntity(match.getRide2()));
+
         return response;
     }
 

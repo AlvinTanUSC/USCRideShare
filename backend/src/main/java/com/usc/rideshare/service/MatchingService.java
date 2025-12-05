@@ -93,7 +93,7 @@ public class MatchingService {
      */
     private Set<UUID> getAlreadyMatchedRideIds(UUID rideId) {
         return matchRepository.findByRideId(rideId).stream()
-                .filter(m -> m.getStatus() != MatchStatus.DECLINED)
+                .filter(m -> m.getStatus() != MatchStatus.REJECTED)
                 .flatMap(m -> {
                     List<UUID> ids = new ArrayList<>();
                     if (m.getRide1() != null) ids.add(m.getRide1().getRideId());
@@ -217,8 +217,8 @@ public class MatchingService {
             if (m.getStatus() == com.usc.rideshare.entity.enums.MatchStatus.ACCEPTED) {
                 throw new IllegalArgumentException("Already matched with this ride");
             }
-            if (m.getStatus() == com.usc.rideshare.entity.enums.MatchStatus.PENDING) {
-                // Return existing pending match
+            if (m.getStatus() == com.usc.rideshare.entity.enums.MatchStatus.SUGGESTED) {
+                // Return existing suggested match
                 return MatchResponse.fromEntity(m);
             }
         }
@@ -229,7 +229,7 @@ public class MatchingService {
         match.setRide1(myRide);     // requester
         match.setRide2(targetRide); // target
         match.setMatchScore(score);
-        match.setStatus(com.usc.rideshare.entity.enums.MatchStatus.PENDING);
+        match.setStatus(com.usc.rideshare.entity.enums.MatchStatus.SUGGESTED);
 
         Match saved = matchRepository.save(match);
         return MatchResponse.fromEntity(saved);
@@ -283,6 +283,16 @@ public class MatchingService {
         return matchRepository.findByUserId(userId).stream()
                 .map(MatchResponse::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Get a specific match by ID.
+     */
+    @Transactional(readOnly = true)
+    public MatchResponse getMatchById(UUID matchId) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Match not found"));
+        return MatchResponse.fromEntity(match);
     }
 
     /**

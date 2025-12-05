@@ -180,6 +180,20 @@ public class MatchController {
     }
 
     /**
+     * GET /api/matches/{matchId}
+     * Get a specific match by ID.
+     */
+    @GetMapping("/{matchId}")
+    public ResponseEntity<MatchResponse> getMatchById(@PathVariable UUID matchId) {
+        try {
+            MatchResponse match = matchingService.getMatchById(matchId);
+            return ResponseEntity.ok(match);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
      * GET /api/matches/my-rides
      * Get user's pending rides with their potential matches.
      * This is the main dashboard view - shows each of user's rides and what they can join.

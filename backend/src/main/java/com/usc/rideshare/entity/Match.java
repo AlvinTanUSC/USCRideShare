@@ -26,9 +26,9 @@ public class Match {
     @Column(name = "match_score")
     private Double matchScore;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = com.usc.rideshare.config.MatchStatusConverter.class)
     @Column(nullable = false)
-    private MatchStatus status = MatchStatus.PENDING;
+    private MatchStatus status = MatchStatus.SUGGESTED;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -47,7 +47,7 @@ public class Match {
             createdAt = Instant.now();
         }
         if (status == null) {
-            status = MatchStatus.PENDING;
+            status = MatchStatus.SUGGESTED;
         }
     }
 

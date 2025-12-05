@@ -38,6 +38,13 @@ export default function Header() {
             Find Match
           </button>
 
+          <button
+            onClick={() => navigate('/matches')}
+            className="text-white hover:text-gold transition font-medium"
+          >
+            My Matches
+          </button>
+
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-cardinal-red font-bold">
               {userEmail.charAt(0).toUpperCase()}
