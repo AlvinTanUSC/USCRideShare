@@ -171,11 +171,6 @@ export default function RideDetail() {
               })}
             </p>
           </div>
-
-          {/* Future: Request to Connect Button */}
-          <div className="mt-6 text-center text-gray-500 text-sm">
-            Request/Match features coming soon!
-          </div>
         </div>
       </div>
     </div>
