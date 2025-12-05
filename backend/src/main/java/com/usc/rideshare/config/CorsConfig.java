@@ -16,6 +16,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 "http://127.0.0.1:5173",  // loopback variants
                 "http://127.0.0.1:5174",
                 "http://localhost:3000",  // React default
+                "https://usc-ride-share.vercel.app",
                 "https://*.vercel.app"    // Vercel deployments
             )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
