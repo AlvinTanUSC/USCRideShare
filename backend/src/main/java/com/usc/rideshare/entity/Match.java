@@ -35,7 +35,10 @@ public class Match {
 
     @Column(name = "confirmed_at")
     private Instant confirmedAt;
-    
+
+    @Column(name = "completed_at")
+    private Instant completedAt;
+
     // Note: requested_by_user_id is not in the current database schema
     // We'll derive it from ride1's user for now
     @Transient
@@ -124,6 +127,14 @@ public class Match {
 
     public void setConfirmedAt(Instant confirmedAt) {
         this.confirmedAt = confirmedAt;
+    }
+
+    public Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Instant completedAt) {
+        this.completedAt = completedAt;
     }
 }
 

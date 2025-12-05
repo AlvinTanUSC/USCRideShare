@@ -91,6 +91,10 @@ export const matchApi = {
       targetRideId,
     });
   },
+
+  // Complete a match (mark rideshare as successfully completed)
+  completeMatch: (matchId) =>
+    apiClient.post(`/api/matches/${matchId}/complete`),
 };
 
 export default apiClient;

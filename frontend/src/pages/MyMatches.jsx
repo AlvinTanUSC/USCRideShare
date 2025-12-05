@@ -9,6 +9,8 @@ export default function MyMatches() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [completing, setCompleting] = useState(null);
+  const [completeError, setCompleteError] = useState(null);
   const currentUserId = localStorage.getItem('userId');
 
   useEffect(() => {
@@ -43,8 +45,29 @@ export default function MyMatches() {
       ACCEPTED: 'bg-green-100 text-green-800',
       SUGGESTED: 'bg-blue-100 text-blue-800',
       REJECTED: 'bg-red-100 text-red-800',
+      COMPLETED: 'bg-purple-100 text-purple-800',
     };
     return styles[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const handleCompleteMatch = async (matchId) => {
+    if (!window.confirm('Are you sure you want to mark this rideshare as completed?')) {
+      return;
+    }
+
+    setCompleting(matchId);
+    setCompleteError(null);
+
+    try {
+      await matchApi.completeMatch(matchId);
+      // Refresh matches to show updated status
+      await loadMatches();
+    } catch (err) {
+      console.error('Error completing match:', err);
+      setCompleteError(err.response?.data?.error || 'Failed to complete match');
+    } finally {
+      setCompleting(null);
+    }
   };
 
   if (loading) {
@@ -143,7 +166,11 @@ export default function MyMatches() {
                     </div>
                   </div>
 
-                
+                  {completeError && match.matchId === completing && (
+                    <div className="mb-4">
+                      <Alert type="error" message={completeError} />
+                    </div>
+                  )}
 
                   <div className="flex gap-3">
                     <button
@@ -159,6 +186,20 @@ export default function MyMatches() {
                       View Details
                     </button>
                   </div>
+
+                  {match.status === 'ACCEPTED' && (
+                    <div className="mt-4">
+                      <button
+                        onClick={() => handleCompleteMatch(match.matchId)}
+                        disabled={completing === match.matchId}
+                        className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-green-300 transition font-medium"
+                      >
+                        {completing === match.matchId
+                          ? 'Completing...'
+                          : '✓ Mark as Completed'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}

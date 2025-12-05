@@ -54,12 +54,12 @@ public class MatchingService {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RideNotFoundException("Ride not found with id: " + rideId));
 
-        // Find all rides with same destination that are ACTIVE or PENDING (available to join)
+        // Find all rides with same destination that are ACTIVE (available to join)
         List<Ride> candidateRides = rideRepository.findByDestination(ride.getDestination())
                 .stream()
                 .filter(r -> !r.getRideId().equals(rideId)) // Exclude this ride
                 .filter(r -> !r.getUser().getUserId().equals(ride.getUser().getUserId())) // Exclude own rides
-                .filter(r -> r.getStatus() == RideStatus.ACTIVE) // Only available rides
+                .filter(r -> r.getStatus() == RideStatus.ACTIVE) // Only available rides (excludes EXPIRED)
                 .filter(r -> r.getDepartureDatetime().isAfter(Instant.now())) // Only future rides
                 .collect(Collectors.toList());
 
@@ -247,7 +247,7 @@ public class MatchingService {
         // Verify user is part of this match
         boolean isRide1Owner = match.getRide1().getUser().getUserId().equals(userId);
         boolean isRide2Owner = match.getRide2().getUser().getUserId().equals(userId);
-        
+
         if (!isRide1Owner && !isRide2Owner) {
             throw new IllegalArgumentException("You are not part of this match");
         }
@@ -260,6 +260,42 @@ public class MatchingService {
 
         // Delete the match
         matchRepository.delete(match);
+    }
+
+    /**
+     * Complete a match (mark rideshare as successfully completed).
+     * Both rides are marked as COMPLETED and the match status is set to COMPLETED.
+     */
+    @Transactional
+    public MatchResponse completeMatch(UUID matchId, UUID userId) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match not found"));
+
+        // Verify user is part of this match
+        boolean isRide1Owner = match.getRide1().getUser().getUserId().equals(userId);
+        boolean isRide2Owner = match.getRide2().getUser().getUserId().equals(userId);
+
+        if (!isRide1Owner && !isRide2Owner) {
+            throw new IllegalArgumentException("You are not part of this match");
+        }
+
+        // Verify match is in ACCEPTED status
+        if (match.getStatus() != MatchStatus.ACCEPTED) {
+            throw new IllegalArgumentException("Can only complete matches that are in ACCEPTED status");
+        }
+
+        // Mark match as completed
+        match.setStatus(MatchStatus.COMPLETED);
+        match.setCompletedAt(Instant.now());
+
+        // Mark both rides as completed
+        match.getRide1().setStatus(RideStatus.COMPLETED);
+        match.getRide2().setStatus(RideStatus.COMPLETED);
+        rideRepository.save(match.getRide1());
+        rideRepository.save(match.getRide2());
+
+        Match savedMatch = matchRepository.save(match);
+        return MatchResponse.fromEntity(savedMatch);
     }
 
     /**

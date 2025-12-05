@@ -141,6 +141,30 @@ public class MatchController {
     }
 
     /**
+     * POST /api/matches/{matchId}/complete
+     * Mark a match as successfully completed.
+     * Both rides will be marked as COMPLETED.
+     */
+    @PostMapping("/{matchId}/complete")
+    public ResponseEntity<?> completeMatch(
+            @PathVariable UUID matchId,
+            @RequestHeader(value = "X-User-Id", required = false) UUID userId) {
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            MatchResponse match = matchingService.completeMatch(matchId, userId);
+            return ResponseEntity.ok(match);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    /**
      * GET /api/matches/current
      * Get user's current active match (if any).
      */
