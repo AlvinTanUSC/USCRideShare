@@ -26,9 +26,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        // Skip auth for: login endpoint, preflight requests, GET rides (browse), WebSocket endpoints, and test endpoints
+        // Skip auth for: login endpoint, preflight requests, GET rides (browse), WebSocket endpoints, test endpoints, and public stats
         if (path.startsWith("/api/auth") ||
             path.startsWith("/api/test") ||
+            path.startsWith("/api/stats/public") ||
             method.equals("OPTIONS") ||
             (path.startsWith("/api/rides") && method.equals("GET")) ||
             path.startsWith("/ws")) {

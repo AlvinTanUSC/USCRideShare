@@ -46,7 +46,7 @@ public class AuthService {
         if (!"true".equalsIgnoreCase(emailVerified)) {
             throw new IllegalArgumentException("Email not verified by Google");
         }
-
+        // - ENABLE/DISABLE usc email check
         if (!email.endsWith("@usc.edu")) {
             throw new IllegalArgumentException("Only @usc.edu emails are allowed");
         }

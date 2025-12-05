@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ChatWindow from '../components/ChatWindow';
 import api from '../services/api';
 import Alert from '../components/Alert';
+import Header from '../components/Header';
 
 function Chat() {
   const { matchId } = useParams();
@@ -19,9 +20,6 @@ function Chat() {
       try {
         const response = await api.get(`/api/matches/${matchId}`);
         const matchData = response.data;
-
-        // TODO: Add status check once match status values are confirmed
-        // For now, allow chat for any match
 
         setMatch(matchData);
 
@@ -74,37 +72,45 @@ function Chat() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-red-600 hover:text-red-700 flex items-center gap-2"
-        >
-          <span>&larr;</span> Back
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
 
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-2xl font-bold mb-4">Match Details</h2>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-600">Destination:</span>
-            <span className="ml-2 font-medium">{match.ride1.destination}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">Status:</span>
-            <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded">
-              {match.status}
-            </span>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-red-600 hover:text-red-700 flex items-center gap-2"
+          >
+            <span>&larr;</span> Back
+          </button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-2xl font-bold mb-4">Match Details</h2>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-600">Destination:</span>
+              <span className="ml-2 font-medium">{match.ride1.destination}</span>
+            </div>
+            <div>
+              <span className="text-gray-600">Status:</span>
+              <span className={`ml-2 px-2 py-1 rounded ${
+                match.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                match.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                'bg-yellow-100 text-yellow-800'
+              }`}>
+                {match.status}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <ChatWindow
-        matchId={matchId}
-        currentUserId={currentUserId}
-        otherUserName={`${otherUser.firstName} ${otherUser.lastName}`}
-      />
+        <ChatWindow
+          matchId={matchId}
+          currentUserId={currentUserId}
+          otherUserName={`${otherUser.firstName} ${otherUser.lastName}`}
+        />
+      </div>
     </div>
   );
 }

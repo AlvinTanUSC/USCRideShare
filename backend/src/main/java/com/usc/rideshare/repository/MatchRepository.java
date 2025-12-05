@@ -72,5 +72,17 @@ public interface MatchRepository extends JpaRepository<Match, UUID> {
                 .filter(m -> m.getStatus() == status)
                 .collect(java.util.stream.Collectors.toList());
     }
+
+    /**
+     * Count matches by status (using default method to avoid PostgreSQL enum casting issues)
+     */
+    default Long countByStatus(MatchStatus status) {
+        if (status == null) {
+            return 0L;
+        }
+        return findAll().stream()
+                .filter(m -> m.getStatus() != null && m.getStatus() == status)
+                .count();
+    }
 }
 

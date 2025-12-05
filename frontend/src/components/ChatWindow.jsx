@@ -24,7 +24,7 @@ function ChatWindow({ matchId, currentUserId, otherUserName }) {
 
     const loadChatHistory = async () => {
       try {
-        const response = await api.get(`/chat/match/${matchId}`, {
+        const response = await api.get(`/api/chat/match/${matchId}`, {
           params: { userId: currentUserId }
         });
         if (isSubscribed) {
@@ -49,7 +49,7 @@ function ChatWindow({ matchId, currentUserId, otherUserName }) {
               setMessages(prev => [...prev, message]);
 
               if (message.senderId !== currentUserId) {
-                api.put(`/chat/match/${matchId}/read`, null, {
+                api.put(`/api/chat/match/${matchId}/read`, null, {
                   params: { userId: currentUserId }
                 }).catch(err => console.error('Error marking as read:', err));
               }
@@ -66,10 +66,10 @@ function ChatWindow({ matchId, currentUserId, otherUserName }) {
           // Send presence notification that we're online
           chatService.sendPresence(matchId, currentUserId, true);
 
-          // Periodically send heartbeat
+          // Periodically send heartbeat more frequently
           presenceCheckInterval.current = setInterval(() => {
             chatService.sendPresence(matchId, currentUserId, true);
-          }, 30000); // Every 30 seconds
+          }, 10000); // Every 10 seconds for more responsive updates
         },
         (error) => {
           console.error('[ChatWindow] WebSocket connection error:', error);
