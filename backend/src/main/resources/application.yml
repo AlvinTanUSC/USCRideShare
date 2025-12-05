@@ -33,6 +33,15 @@ jwt:
   expiration:
     ms: ${JWT_EXPIRATION_MS:86400000}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
 logging:
   level:
     com.usc.rideshare: DEBUG

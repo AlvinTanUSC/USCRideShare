@@ -35,14 +35,12 @@ public class TestAuthController {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + request.getEmail()));
 
-        String token = jwtUtil.generateToken(user.getUserId());
+        String token = jwtUtil.generateToken(user.getUserId(), user.getEmail());
 
         AuthResponse response = new AuthResponse();
         response.setToken(token);
         response.setUserId(user.getUserId());
         response.setEmail(user.getEmail());
-        response.setFirstName(user.getFirstName());
-        response.setLastName(user.getLastName());
 
         return ResponseEntity.ok(response);
     }
