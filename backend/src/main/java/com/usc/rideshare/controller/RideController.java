@@ -15,6 +15,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/rides")
@@ -66,6 +68,25 @@ public class RideController {
     public ResponseEntity<RideResponse> getRideById(@PathVariable UUID id) {
         RideResponse ride = rideService.getRideById(id);
         return ResponseEntity.ok(ride);
+    }
+
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelRide(@PathVariable UUID id, HttpServletRequest servletRequest) {
+        UUID userId = (UUID) servletRequest.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            RideResponse response = rideService.cancelRide(id, userId);
+            return ResponseEntity.ok(response);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }
 

@@ -59,6 +59,8 @@ export const rideApi = {
   getRideById: (id) => apiClient.get(`/api/rides/${id}`),
 
   getMyRides: () => apiClient.get("/api/rides/my-rides"),
+
+  cancelRide: (id) => apiClient.patch(`/api/rides/${id}/cancel`),
 };
 
 export const matchApi = {

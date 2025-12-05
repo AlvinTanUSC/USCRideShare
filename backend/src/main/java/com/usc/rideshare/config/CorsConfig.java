@@ -19,7 +19,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 "https://usc-ride-share.vercel.app",
                 "https://*.vercel.app"    // Vercel deployments
             )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
