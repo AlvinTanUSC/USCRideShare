@@ -4,7 +4,7 @@ import com.usc.rideshare.entity.enums.MatchStatus;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
-@Converter(autoApply = true)
+@Converter(autoApply = false)
 public class MatchStatusConverter implements AttributeConverter<MatchStatus, String> {
 
     @Override

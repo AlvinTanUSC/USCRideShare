@@ -29,4 +29,8 @@ public interface RideRepository extends JpaRepository<Ride, UUID> {
 
     // Find rides by destination and status
     List<Ride> findByDestinationAndStatus(String destination, RideStatus status);
+
+    // Get top destinations with ride count
+    @Query("SELECT r.destination, COUNT(r) FROM Ride r GROUP BY r.destination ORDER BY COUNT(r) DESC")
+    List<Object[]> findTopDestinations();
 }

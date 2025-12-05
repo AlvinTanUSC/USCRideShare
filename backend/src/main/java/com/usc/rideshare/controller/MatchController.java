@@ -206,9 +206,33 @@ public class MatchController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        List<MatchingService.RideWithMatches> ridesWithMatches = 
+        List<MatchingService.RideWithMatches> ridesWithMatches =
                 matchingService.getUserRidesWithMatches(userId);
         return ResponseEntity.ok(ridesWithMatches);
+    }
+
+    /**
+     * PUT /api/matches/{matchId}/status
+     * Update match status (SUGGESTED, ACCEPTED, REJECTED).
+     */
+    @PutMapping("/{matchId}/status")
+    public ResponseEntity<?> updateMatchStatus(
+            @PathVariable UUID matchId,
+            @RequestBody UpdateStatusRequest request,
+            @RequestHeader(value = "X-User-Id", required = false) UUID userId) {
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            MatchResponse match = matchingService.updateMatchStatus(matchId, request.getStatus(), userId);
+            return ResponseEntity.ok(match);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 
     // ==================== Request DTOs ====================
@@ -224,5 +248,15 @@ public class MatchController {
         public void setMyRideId(UUID myRideId) { this.myRideId = myRideId; }
         public UUID getTargetRideId() { return targetRideId; }
         public void setTargetRideId(UUID targetRideId) { this.targetRideId = targetRideId; }
+    }
+
+    /**
+     * Request body for updating match status.
+     */
+    public static class UpdateStatusRequest {
+        private String status;
+
+        public String getStatus() { return status; }
+        public void setStatus(String status) { this.status = status; }
     }
 }

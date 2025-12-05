@@ -312,6 +312,39 @@ public class MatchingService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Update match status (SUGGESTED, ACCEPTED, REJECTED).
+     */
+    @Transactional
+    public MatchResponse updateMatchStatus(UUID matchId, String statusStr, UUID userId) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match not found"));
+
+        // Verify user is part of the match
+        boolean isUserInMatch = match.getRide1().getUser().getUserId().equals(userId) ||
+                               match.getRide2().getUser().getUserId().equals(userId);
+
+        if (!isUserInMatch) {
+            throw new IllegalArgumentException("User is not part of this match");
+        }
+
+        // Parse and set the new status
+        try {
+            MatchStatus newStatus = MatchStatus.valueOf(statusStr.toUpperCase());
+            match.setStatus(newStatus);
+
+            // If accepted, set confirmed time
+            if (newStatus == MatchStatus.ACCEPTED && match.getConfirmedAt() == null) {
+                match.setConfirmedAt(Instant.now());
+            }
+
+            match = matchRepository.save(match);
+            return MatchResponse.fromEntity(match);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + statusStr);
+        }
+    }
+
     // ==================== Helper Methods ====================
 
     /**
