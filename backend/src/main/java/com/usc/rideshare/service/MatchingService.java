@@ -385,37 +385,39 @@ public class MatchingService {
     /**
      * Calculate a match score based on compatibility.
      * Higher score = better match.
+     * Score is normalized between 0.0 and 1.0 to satisfy database constraint.
      */
     private double calculateMatchScore(Ride ride1, Ride ride2) {
-        double score = 100.0;
+        double score = 1.0; // Start at perfect match
 
-        // Time difference penalty
+        // Time difference penalty (max penalty: 0.5)
         Instant time1 = ride1.getDepartureDatetime();
         Instant time2 = ride2.getDepartureDatetime();
         LocalDateTime ldt1 = LocalDateTime.ofInstant(time1, ZoneId.systemDefault());
         LocalDateTime ldt2 = LocalDateTime.ofInstant(time2, ZoneId.systemDefault());
         long minutesDiff = Math.abs(ChronoUnit.MINUTES.between(ldt1, ldt2));
-        score -= Math.min(50.0, minutesDiff * 0.5);
+        score -= Math.min(0.5, minutesDiff * 0.005); // 0.5% penalty per minute, max 50%
 
-        // Bonus for matching cost split preferences
+        // Bonus for matching cost split preferences (10%)
         if (ride1.getCostSplitPreference() == ride2.getCostSplitPreference()) {
-            score += 10.0;
+            score += 0.1;
         }
 
-        // Bonus for similar max passengers
+        // Bonus for similar max passengers (up to 15%)
         int passengerDiff = Math.abs(ride1.getMaxPassengers() - ride2.getMaxPassengers());
-        score += (3 - passengerDiff) * 5.0;
+        score += (3 - passengerDiff) * 0.05; // 5% per matching passenger preference
 
-        // Origin similarity bonus
+        // Origin similarity bonus (15% for exact, 10% for USC area)
         String origin1 = ride1.getOriginLocation().toLowerCase();
         String origin2 = ride2.getOriginLocation().toLowerCase();
         if (origin1.equals(origin2)) {
-            score += 15.0;
+            score += 0.15;
         } else if (origin1.contains("usc") && origin2.contains("usc")) {
-            score += 10.0;
+            score += 0.10;
         }
 
-        return Math.max(0, score);
+        // Clamp score between 0.0 and 1.0 to satisfy database constraint
+        return Math.max(0.0, Math.min(1.0, score));
     }
 
     // ==================== Inner Classes ====================

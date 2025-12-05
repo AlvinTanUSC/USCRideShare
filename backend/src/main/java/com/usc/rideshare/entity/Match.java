@@ -26,8 +26,8 @@ public class Match {
     @Column(name = "match_score")
     private Double matchScore;
 
-    @Convert(converter = com.usc.rideshare.config.MatchStatusConverter.class)
-    @Column(name = "status", nullable = false, columnDefinition = "match_status")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private MatchStatus status = MatchStatus.SUGGESTED;
 
     @Column(name = "created_at", nullable = false)

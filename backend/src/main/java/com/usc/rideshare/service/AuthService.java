@@ -47,9 +47,9 @@ public class AuthService {
             throw new IllegalArgumentException("Email not verified by Google");
         }
         // - ENABLE/DISABLE usc email check
-        if (!email.endsWith("@usc.edu")) {
-            throw new IllegalArgumentException("Only @usc.edu emails are allowed");
-        }
+        // if (!email.endsWith("@usc.edu")) {
+        //     throw new IllegalArgumentException("Only @usc.edu emails are allowed");
+        // }
 
         Optional<User> existing = userRepository.findByEmail(email);
         User user;

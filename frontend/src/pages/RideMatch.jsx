@@ -23,6 +23,18 @@ export default function RideMatch() {
   const [polling, setPolling] = useState(false);
   const pollIntervalRef = useRef(null);
 
+  // Check authentication on mount
+  useEffect(() => {
+    const authToken = localStorage.getItem('authToken');
+    const userId = localStorage.getItem('userId');
+
+    if (!authToken || !userId) {
+      console.error('User not authenticated. Redirecting to login...');
+      setError('Please log in to find matches');
+      setTimeout(() => navigate('/login'), 2000);
+    }
+  }, [navigate]);
+
   // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,25 +64,35 @@ export default function RideMatch() {
         maxPassengers: 2,
       };
 
+      console.log('Creating ride with data:', rideData);
       const response = await rideApi.createRide(rideData);
+      console.log('Ride created successfully:', response.data);
 
       setMyRideId(response.data.rideId);
       setStep('waiting');
 
       // Immediately fetch potential matches once
       try {
+        console.log('Fetching potential matches for ride:', response.data.rideId);
         const potentialMatchesRes = await matchApi.findPotentialMatches(response.data.rideId);
+        console.log('Potential matches found:', potentialMatchesRes.data);
         setMatches(potentialMatchesRes.data || []);
         if ((potentialMatchesRes.data || []).length > 0) {
           setStep('results');
         }
       } catch (matchErr) {
         console.error('Error fetching potential matches:', matchErr);
+        console.error('Match error details:', matchErr.response?.data);
+        // Show the error to the user
+        setError(`Could not fetch matches: ${matchErr.response?.data?.error || matchErr.message}`);
+        setStep('form');
       }
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data?.error || 'Failed to create ride';
       setError(msg);
       console.error('Create ride failed:', msg, err);
+      console.error('Full error:', err.response?.data);
+      setStep('form');
     } finally {
       setLoading(false);
     }
@@ -216,9 +238,9 @@ export default function RideMatch() {
                           <span className="font-medium">Time:</span> {formatTime(m.candidateDepartureTime)}
                         </p>
                       </div>
-                      {m.matchScore && (
+                      {m.matchScore !== null && m.matchScore !== undefined && (
                         <span className="inline-block mt-3 bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">
-                          {m.matchScore.toFixed(0)}% match
+                          {(m.matchScore * 100).toFixed(0)}% match
                         </span>
                       )}
                     </div>
