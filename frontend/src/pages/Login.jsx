@@ -61,21 +61,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <h1 className="text-4xl font-bold text-white text-center mb-8">
-          🚗 Trojan Rides
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-cardinal-red to-red-900 flex items-center justify-center px-4">
+      <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-cardinal-red mb-2">Trojan Rides</h1>
+          <p className="text-gray-600">USC Rideshare Platform</p>
+        </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your.name@usc.edu"
-            className="w-full bg-gray-800 text-white px-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-white"
-            required
-          />
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">Sign in</h2>
+          <p className="text-gray-600 text-sm">USC emails only</p>
+        </div>
 
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">

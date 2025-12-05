@@ -8,13 +8,6 @@ spring:
     driver-class-name: org.postgresql.Driver
     # HikariCP settings are now configured in DataSourceConfig.java
     # This ensures proper connection pool management and graceful shutdown
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-      connection-timeout: 30000
-      # Disable prepared statement caching to avoid conflicts
-      data-source-properties:
-        prepareThreshold: 0
 
   jpa:
     hibernate:
@@ -24,13 +17,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-        # Fix enum type handling in PostgreSQL
         jdbc.lob.non_contextual_creation: true
-        # Fix prepared statement caching issues
-        jdbc.batch_size: 20
-        order_inserts: true
-        order_updates: true
-        jdbc.use_get_generated_keys: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 

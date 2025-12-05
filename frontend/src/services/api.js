@@ -52,33 +52,4 @@ export const rideApi = {
   getRideById: (id) => apiClient.get(`/api/rides/${id}`),
 };
 
-export const matchApi = {
-  // Find potential matches for a ride (available rides to join)
-  findPotentialMatches: (rideId) => apiClient.get(`/api/matches/potential/${rideId}`),
-
-  // Join an existing ride (auto-match, no approval needed)
-  joinRide: (myRideId, targetRideId) => 
-    apiClient.post('/api/matches/join', { myRideId, targetRideId }),
-
-  // Cancel/leave a match
-  cancelMatch: (matchId) => apiClient.delete(`/api/matches/${matchId}`),
-
-  // Get current active match
-  getCurrentMatch: () => apiClient.get('/api/matches/current'),
-
-  // Get all matches for current user (history)
-  getUserMatches: () => apiClient.get('/api/matches'),
-
-  // Get user's rides with their potential matches (dashboard view)
-  getMyRidesWithMatches: () => apiClient.get('/api/matches/my-rides'),
-
-  // Request a match (user sends a request to join a ride)
-  requestMatch: async (myRideId, targetRideId) => {
-    return apiClient.post('/api/matches/request', {
-      myRideId,
-      targetRideId,
-    });
-  },
-};
-
 export default apiClient;
