@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Rides from './pages/Rides';
 import NewRide from './pages/NewRide';
 import RideDetail from './pages/RideDetail';
+import RideMatch from './pages/RideMatch';
 
 // Protected Route component
 function ProtectedRoute({ children }) {
@@ -33,6 +34,14 @@ function App() {
           element={
             <ProtectedRoute>
               <NewRide />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rides/match"
+          element={
+            <ProtectedRoute>
+              <RideMatch />
             </ProtectedRoute>
           }
         />
