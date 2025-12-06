@@ -18,6 +18,8 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Service for automatic ride matching - similar to Uber/Lyft pool.
@@ -69,18 +71,22 @@ public class MatchingService {
                 .filter(r -> !alreadyMatchedRideIds.contains(r.getRideId()))
                 .collect(Collectors.toList());
 
-        // Check time compatibility and calculate match scores
-        List<MatchCandidate> candidates = candidateRides.stream()
-                .map(candidateRide -> {
-                    if (areTimesCompatible(ride, candidateRide)) {
-                        double score = calculateMatchScore(ride, candidateRide);
-                        return new MatchCandidate(candidateRide, score);
-                    }
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .sorted((a, b) -> Double.compare(b.score, a.score)) // Sort by score descending
-                .collect(Collectors.toList());
+        // Use a Queue to process candidate rides in FIFO order for match scoring
+        // This demonstrates Queue data structure usage for sequential processing
+        Queue<Ride> rideProcessingQueue = new LinkedList<>(candidateRides);
+        List<MatchCandidate> candidates = new ArrayList<>();
+
+        // Process each ride from the queue
+        while (!rideProcessingQueue.isEmpty()) {
+            Ride candidateRide = rideProcessingQueue.poll(); // Dequeue from front
+            if (areTimesCompatible(ride, candidateRide)) {
+                double score = calculateMatchScore(ride, candidateRide);
+                candidates.add(new MatchCandidate(candidateRide, score));
+            }
+        }
+
+        // Sort candidates by score descending
+        candidates.sort((a, b) -> Double.compare(b.score, a.score));
 
         // Convert to MatchResponse DTOs with scores
         return candidates.stream()

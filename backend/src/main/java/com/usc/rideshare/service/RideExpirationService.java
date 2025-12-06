@@ -41,8 +41,9 @@ public class RideExpirationService {
 
             for (Ride ride : activeRides) {
                 // Calculate expiration time: departure time + flexibility
+                int flexibilityMinutes = ride.getTimeFlexibilityMinutes() != null ? ride.getTimeFlexibilityMinutes() : 0;
                 Instant expirationTime = ride.getDepartureDatetime()
-                    .plusSeconds((long) ride.getTimeFlexibilityMinutes() * 60);
+                    .plusSeconds((long) flexibilityMinutes * 60);
 
                 // If current time is past expiration time, mark as expired
                 if (now.isAfter(expirationTime)) {
