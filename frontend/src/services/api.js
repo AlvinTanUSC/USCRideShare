@@ -95,6 +95,10 @@ export const matchApi = {
   // Complete a match (mark rideshare as successfully completed)
   completeMatch: (matchId) =>
     apiClient.post(`/api/matches/${matchId}/complete`),
+
+  // Update match status (ACCEPTED, REJECTED, etc.)
+  updateMatchStatus: (matchId, status) =>
+    apiClient.put(`/api/matches/${matchId}/status`, { status }),
 };
 
 export default apiClient;

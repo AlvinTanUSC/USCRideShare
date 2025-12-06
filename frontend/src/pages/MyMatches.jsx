@@ -11,6 +11,8 @@ export default function MyMatches() {
   const [error, setError] = useState('');
   const [completing, setCompleting] = useState(null);
   const [completeError, setCompleteError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [actionError, setActionError] = useState(null);
   const currentUserId = localStorage.getItem('userId');
 
   useEffect(() => {
@@ -67,6 +69,42 @@ export default function MyMatches() {
       setCompleteError(err.response?.data?.error || 'Failed to complete match');
     } finally {
       setCompleting(null);
+    }
+  };
+
+  const handleAcceptMatch = async (matchId) => {
+    setActionLoading(matchId);
+    setActionError(null);
+
+    try {
+      await matchApi.updateMatchStatus(matchId, 'ACCEPTED');
+      // Refresh matches to show updated status
+      await loadMatches();
+    } catch (err) {
+      console.error('Error accepting match:', err);
+      setActionError(err.response?.data?.error || 'Failed to accept match');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRejectMatch = async (matchId) => {
+    if (!window.confirm('Are you sure you want to reject this match?')) {
+      return;
+    }
+
+    setActionLoading(matchId);
+    setActionError(null);
+
+    try {
+      await matchApi.updateMatchStatus(matchId, 'REJECTED');
+      // Refresh matches to show updated status
+      await loadMatches();
+    } catch (err) {
+      console.error('Error rejecting match:', err);
+      setActionError(err.response?.data?.error || 'Failed to reject match');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -172,6 +210,12 @@ export default function MyMatches() {
                     </div>
                   )}
 
+                  {actionError && match.matchId === actionLoading && (
+                    <div className="mb-4">
+                      <Alert type="error" message={actionError} />
+                    </div>
+                  )}
+
                   <div className="flex gap-3">
                     <button
                       onClick={() => navigate(`/chat/${match.matchId}`)}
@@ -186,6 +230,25 @@ export default function MyMatches() {
                       View Details
                     </button>
                   </div>
+
+                  {match.status === 'SUGGESTED' && (
+                    <div className="mt-4 flex gap-3">
+                      <button
+                        onClick={() => handleAcceptMatch(match.matchId)}
+                        disabled={actionLoading === match.matchId}
+                        className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-green-300 transition font-medium"
+                      >
+                        {actionLoading === match.matchId ? 'Accepting...' : '✓ Accept Match'}
+                      </button>
+                      <button
+                        onClick={() => handleRejectMatch(match.matchId)}
+                        disabled={actionLoading === match.matchId}
+                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-red-300 transition font-medium"
+                      >
+                        {actionLoading === match.matchId ? 'Rejecting...' : '✗ Reject Match'}
+                      </button>
+                    </div>
+                  )}
 
                   {match.status === 'ACCEPTED' && (
                     <div className="mt-4">

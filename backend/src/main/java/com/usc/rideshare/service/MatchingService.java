@@ -57,12 +57,18 @@ public class MatchingService {
                 .orElseThrow(() -> new RideNotFoundException("Ride not found with id: " + rideId));
 
         // Find all rides with same destination that are ACTIVE (available to join)
+        Instant now = Instant.now();
         List<Ride> candidateRides = rideRepository.findByDestination(ride.getDestination())
                 .stream()
                 .filter(r -> !r.getRideId().equals(rideId)) // Exclude this ride
                 .filter(r -> !r.getUser().getUserId().equals(ride.getUser().getUserId())) // Exclude own rides
                 .filter(r -> r.getStatus() == RideStatus.ACTIVE) // Only available rides (excludes EXPIRED)
-                .filter(r -> r.getDepartureDatetime().isAfter(Instant.now())) // Only future rides
+                .filter(r -> {
+                    // Check if ride is still within its valid time window (departure + flexibility)
+                    int flexibilityMinutes = r.getTimeFlexibilityMinutes() != null ? r.getTimeFlexibilityMinutes() : 0;
+                    Instant expirationTime = r.getDepartureDatetime().plusSeconds((long) flexibilityMinutes * 60);
+                    return expirationTime.isAfter(now);
+                })
                 .collect(Collectors.toList());
 
         // Filter out rides already matched with this ride
@@ -373,11 +379,34 @@ public class MatchingService {
         // Parse and set the new status
         try {
             MatchStatus newStatus = MatchStatus.valueOf(statusStr.toUpperCase());
+            MatchStatus oldStatus = match.getStatus();
             match.setStatus(newStatus);
 
-            // If accepted, set confirmed time
+            // If accepted, set confirmed time and update ride statuses
             if (newStatus == MatchStatus.ACCEPTED && match.getConfirmedAt() == null) {
                 match.setConfirmedAt(Instant.now());
+
+                // Update both rides to MATCHED status (just like joinRide does)
+                Ride ride1 = match.getRide1();
+                Ride ride2 = match.getRide2();
+                ride1.setStatus(RideStatus.MATCHED);
+                ride2.setStatus(RideStatus.MATCHED);
+                rideRepository.save(ride1);
+                rideRepository.save(ride2);
+            }
+
+            // If rejected, revert rides back to ACTIVE if they were MATCHED
+            if (newStatus == MatchStatus.REJECTED && oldStatus == MatchStatus.ACCEPTED) {
+                Ride ride1 = match.getRide1();
+                Ride ride2 = match.getRide2();
+                if (ride1.getStatus() == RideStatus.MATCHED) {
+                    ride1.setStatus(RideStatus.ACTIVE);
+                    rideRepository.save(ride1);
+                }
+                if (ride2.getStatus() == RideStatus.MATCHED) {
+                    ride2.setStatus(RideStatus.ACTIVE);
+                    rideRepository.save(ride2);
+                }
             }
 
             match = matchRepository.save(match);
