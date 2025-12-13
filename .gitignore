@@ -19,6 +19,9 @@ frontend/*.iml
 frontend/.DS_Store
 frontend/.vscode/
 
+#testing
+testing/node_modules/
+
 # IDE
 .idea/
 .vscode/
