@@ -24,6 +24,8 @@ Complete guide to running all tests across the USC RideShare project.
 ```bash
 cd /Users/afrinmomin/Documents/GitHub/USCRideShare/testing
 npm install
+npm init -y
+npm install axios
 ```
 
 **Step 2: Run Unit & Integration Tests**
